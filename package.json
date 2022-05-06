@@ -1,0 +1,25 @@
+{
+  "name": "tauri-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Robby6Strings/tauri-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Robby6Strings/tauri-server/issues"
+  },
+  "homepage": "https://github.com/Robby6Strings/tauri-server#readme",
+  "dependencies": {
+    "bufferutil": "^4.0.6",
+    "express": "^4.18.1",
+    "utf-8-validate": "^5.0.9",
+    "ws": "^8.6.0"
+  }
+}
