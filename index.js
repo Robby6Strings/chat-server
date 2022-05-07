@@ -54,7 +54,7 @@ class Channel {
   broadcast(msg) {
     this.messages.push(msg);
     channels.set(this.id, this);
-    console.log('broadcasting to channel', this.id);
+    console.log('broadcasting to channel', this.id, msg);
 
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
@@ -219,11 +219,9 @@ function sendChannelList(socket) {
 }
 
 function onClientMessage(socket, msg) {
-  console.log('onClientMessage', msg);
   const { content, channel } = msg;
   const userRecord = clients.get(socket.__clientId);
   const { __clientId, name } = userRecord;
-  console.log('onClientMessage', userRecord);
   const chn = channels.get(channel);
 
   chn.broadcast(new Message({ __clientId, name }, content));
