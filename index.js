@@ -1,5 +1,5 @@
 'use strict';
-
+const crypto = require('crypto');
 const express = require('express');
 const { Server } = require('ws');
 
@@ -11,10 +11,48 @@ const server = express()
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const wss = new Server({ server });
+const clients = new Map();
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  ws.send(
+
+  ws.on('message', (data) => {
+    const msg = JSON.parse(data);
+    switch (msg.type) {
+      case 'auth':
+        addClient(ws, msg.data);
+        break;
+      default:
+        break;
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    clients.delete(this.__clientId);
+  });
+});
+
+function addClient(ws, username) {
+  const id = crypto.randomUUID();
+  ws.__clientId = id;
+  clients.set(id, {
+    name: username,
+    socket: ws,
+  });
+  sendAuthMessage(ws, id);
+  sendWelcomeMessage(ws);
+}
+function sendAuthMessage(socket, userId) {
+  socket.send(
+    JSON.stringify({
+      type: 'auth',
+      data: userId,
+    })
+  );
+}
+function sendWelcomeMessage(socket) {
+  socket.send(
     JSON.stringify({
       type: 'message',
       data: {
@@ -29,8 +67,7 @@ wss.on('connection', (ws) => {
       },
     })
   );
-  ws.on('close', () => console.log('Client disconnected'));
-});
+}
 
 setInterval(() => {
   wss.clients.forEach((client) => {
