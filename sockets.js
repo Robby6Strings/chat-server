@@ -128,6 +128,17 @@ class Channel {
       clearInterval(this.destructionInterval);
       this.destructionInterval = null;
     }
+    clients.forEach((client) => {
+      client.socket.send(
+        JSON.stringify({
+          type: 'channel-life-update',
+          data: {
+            id: this.id,
+            life: this.life,
+          },
+        })
+      );
+    });
   }
 
   deteriorate() {
