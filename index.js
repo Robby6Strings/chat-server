@@ -17,6 +17,7 @@ const channels = new Map();
 class Message {
   constructor(user, content) {
     this.id = crypto.randomUUID();
+    console.log('new message user', user);
     this.user = user;
     this.message = {
       content,
