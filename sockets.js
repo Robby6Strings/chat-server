@@ -107,7 +107,7 @@ class Channel {
   }
 
   deteriorate() {
-    console.log('deteriorating channel ' + this.id, 'old life: ' + this.life);
+    console.log('deteriorating channel ' + this.id, this.life, this.users);
     this.life -= 1;
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
@@ -122,7 +122,6 @@ class Channel {
         })
       );
     });
-    console.log('deteriorated channel ' + this.id, this.life);
     if (this.life < 1) {
       this.destroy();
       console.log('channel destroyed');
