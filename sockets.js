@@ -42,11 +42,10 @@ class Channel {
     this.messages = this.messages.filter((msg) => msg.targetUser != id);
     channels.set(this.id, this);
 
-    if (oldServerMessages) {
-      console.log('removing old server messages');
+    console.log('oldServerMessages', oldServerMessages);
 
+    if (oldServerMessages) {
       this.users.forEach((userId) => {
-        console.log('sending client:deleteMessage command');
         const userRecord = clients.get(userId);
         userRecord.socket.send(
           JSON.stringify({
@@ -162,9 +161,20 @@ class Channel {
 function joinChannel(socket, id, doUpdate = true) {
   const userRecord = clients.get(socket.__clientId);
   const oldChannel = channels.get(userRecord.selectedChannelId);
+
   if (oldChannel) {
     oldChannel.removeUser(socket.__clientId);
-    if (!oldChannel.users.length) oldChannel.beginAutomaticDestruction();
+    if (!oldChannel.users.length) {
+      oldChannel.beginAutomaticDestruction();
+    } else {
+      oldChannel.broadcast(
+        new Message(
+          { id: 1, name: 'Server' },
+          `${userRecord.name} has left the channel 😥`,
+          socket.__clientId
+        )
+      );
+    }
   }
 
   const chnl = channels.get(id);
@@ -174,7 +184,8 @@ function joinChannel(socket, id, doUpdate = true) {
   chnl.broadcast(
     new Message(
       { id: 1, name: 'Server' },
-      `${userRecord.name} joined the channel 😁`
+      `${userRecord.name} has joined the channel 😁`,
+      socket.__clientId
     )
   );
 
