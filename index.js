@@ -17,10 +17,11 @@ const channels = new Map();
 class Message {
   constructor(user, content) {
     this.id = crypto.randomUUID();
-    this.userId = user.id;
-    this.userName = user.name;
-    this.content = content;
-    this.timestamp = new Date();
+    this.user = user;
+    this.message = {
+      content,
+      timestamp: new Date(),
+    };
   }
 }
 
