@@ -27,26 +27,27 @@ class Channel {
     return channels.get(id);
   }
 
-  addUser(id) {
+  addUser(userId) {
     console.log('adding user');
-    const index = this.users.indexOf(id);
+    const index = this.users.indexOf(userId);
     if (index != -1) {
       console.log('user found, not adding');
       return;
     }
-    this.users.push(id);
+    this.users.push(userId);
 
     const oldServerMessages = this.messages.filter(
-      (msg) => msg.targetUser == id
+      (msg) => msg.targetUser == userId
     );
     if (!oldServerMessages) {
       // send welcome message
-      const userRecord = clients.get(id);
+      const userRecord = clients.get(userId);
+      console.log('sending channel welcome message', userRecord.name);
       this.broadcast(
         new Message(
           { id: 1, name: 'Server' },
           `${userRecord.name} has joined the channel 😁`,
-          id
+          userId
         )
       );
     }
