@@ -175,7 +175,7 @@ function addClient(socket, user) {
   });
   if (channels.get(selectedChannelId))
     socket.send(
-      JSON.parse({
+      JSON.stringify({
         type: 'set-channel',
         data: selectedChannelId,
       })
