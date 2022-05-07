@@ -54,7 +54,7 @@ class Channel {
   broadcast(msg) {
     this.messages.push(msg);
     channels.set(this.id, this);
-    console.log('broadcasting to channel', this.id, msg);
+    console.log('broadcasting message to channel ' + this.id, msg);
 
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
@@ -81,6 +81,7 @@ class Channel {
   }
 
   broadcastState() {
+    console.log('channel ' + this.id + ' - broadcasting state');
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
       if (userRecord) {
