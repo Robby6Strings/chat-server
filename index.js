@@ -14,6 +14,12 @@ const wss = new Server({ server });
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  ws.send(
+    JSON.stringify({
+      type: 'message',
+      data: 'Welcome!',
+    })
+  );
   ws.on('close', () => console.log('Client disconnected'));
 });
 
