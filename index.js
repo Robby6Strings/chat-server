@@ -22,6 +22,8 @@ wss.on('connection', (ws) => {
       case 'auth':
         addClient(ws, msg.data);
         break;
+      case 'message':
+        onClientMessage();
       default:
         break;
     }
@@ -33,11 +35,13 @@ wss.on('connection', (ws) => {
   });
 });
 
-function addClient(ws, username) {
-  const id = crypto.randomUUID();
+function addClient(ws, user) {
+  let { name, id } = user;
+  if (!id) id = crypto.randomUUID();
+
   ws.__clientId = id;
   clients.set(id, {
-    name: username,
+    name,
     socket: ws,
   });
   sendAuthMessage(ws, id);
