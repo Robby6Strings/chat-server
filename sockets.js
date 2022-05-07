@@ -39,22 +39,30 @@ class Channel {
     const oldServerMessages = this.messages.filter(
       (msg) => msg.targetUser == id
     );
-    this.messages = this.messages.filter((msg) => msg.targetUser != id);
+    if (!oldServerMessages) {
+      const userRecord = clients.get(userId);
+      this.broadcast(
+        new Message(
+          { id: 1, name: 'Server' },
+          `${userRecord.name} has joined the channel 😁`,
+          userId
+        )
+      );
+    }
+
     channels.set(this.id, this);
 
-    console.log('oldServerMessages', oldServerMessages);
+    // if (oldServerMessages) {
+    //   this.users.forEach((userId) => {
 
-    if (oldServerMessages) {
-      this.users.forEach((userId) => {
-        const userRecord = clients.get(userId);
-        userRecord.socket.send(
-          JSON.stringify({
-            type: 'delete-channel-messages',
-            data: oldServerMessages.map((msg) => msg.id),
-          })
-        );
-      });
-    }
+    //     userRecord.socket.send(
+    //       JSON.stringify({
+    //         type: 'delete-channel-messages',
+    //         data: oldServerMessages.map((msg) => msg.id),
+    //       })
+    //     );
+    //   });
+    // }
   }
   removeUser(id) {
     console.log('removing user from group ' + this.id, id);
@@ -177,14 +185,6 @@ function joinChannel(socket, id, doUpdate = true) {
     oldChannel.removeUser(socket.__clientId);
     if (!oldChannel.users.length) {
       oldChannel.beginAutomaticDestruction();
-    } else {
-      oldChannel.broadcast(
-        new Message(
-          { id: 1, name: 'Server' },
-          `${userRecord.name} has left the channel 😥`,
-          socket.__clientId
-        )
-      );
     }
   }
 
@@ -192,13 +192,6 @@ function joinChannel(socket, id, doUpdate = true) {
   chnl.cancelAutomaticDestruction();
   chnl.addUser(socket.__clientId);
   chnl.broadcastState();
-  chnl.broadcast(
-    new Message(
-      { id: 1, name: 'Server' },
-      `${userRecord.name} has joined the channel 😁`,
-      socket.__clientId
-    )
-  );
 
   if (doUpdate) {
     updateUserChannel(socket, id);
