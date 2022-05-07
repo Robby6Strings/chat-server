@@ -57,6 +57,7 @@ class Channel {
 
     clients.forEach((client) => {
       if (!this.users.find((x) => x == client.__clientId)) return;
+      console.log('broadcasting to client');
       client.send(
         JSON.stringify({
           type: 'new-channel-message',
@@ -214,6 +215,7 @@ function sendChannelList(socket) {
 }
 
 function onClientMessage(socket, msg) {
+  console.log('onClientMessage', msg);
   const { content, channel } = msg;
   const userRecord = clients.get(socket.__clientId);
   const { id, name } = userRecord;
