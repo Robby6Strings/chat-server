@@ -123,7 +123,13 @@ function updateUserChannel(socket, channelId) {
     selectedChannelId: channelId,
     socket,
   });
-  socket.send('set-channel', channelId);
+
+  socket.send(
+    JSON.stringify({
+      type: 'set-channel',
+      data: selectedChannelId,
+    })
+  );
 }
 
 function sendChannelList(socket) {
