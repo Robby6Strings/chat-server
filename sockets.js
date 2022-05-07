@@ -120,6 +120,7 @@ class Channel {
   }
 
   destroy() {
+    clearInterval(this.destructionInterval);
     channels.delete(this.id);
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
@@ -132,7 +133,12 @@ class Channel {
 
 function joinChannel(socket, id, doUpdate = true) {
   const userRecord = clients.get(socket.__clientId);
-  //const oldChannel =
+  const oldChannel = channels.get(userRecord.selectedChannelId);
+  if (oldChannel) {
+    oldChannel.removeUser(socket.__clientId);
+    oldChannel.beginAutomaticDestruction();
+  }
+
   const chnl = channels.get(id);
   if (chnl) {
     chnl.addUser(socket.__clientId);
