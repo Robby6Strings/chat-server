@@ -111,17 +111,16 @@ class Channel {
     this.life -= 1;
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
-      if (userRecord) {
-        userRecord.socket.send(
-          JSON.stringify({
-            type: 'channel-life-update',
-            data: {
-              id: this.id,
-              life: this.life,
-            },
-          })
-        );
-      }
+      console.log('sending user update data', userRecord.name);
+      userRecord.socket.send(
+        JSON.stringify({
+          type: 'channel-life-update',
+          data: {
+            id: this.id,
+            life: this.life,
+          },
+        })
+      );
     });
     console.log('deteriorated channel ' + this.id, this.life);
     if (this.life < 1) {
