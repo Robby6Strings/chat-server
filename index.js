@@ -221,12 +221,12 @@ function sendChannelList(socket) {
 function onClientMessage(socket, msg) {
   const { content, channel } = msg;
   const userRecord = clients.get(socket.__clientId);
-  const { __clientId, name } = userRecord;
+  const { name } = userRecord;
   const chn = channels.get(channel);
 
-  console.log('onClientMessage', __clientId, name);
+  console.log('onClientMessage', socket.__clientId, name);
 
-  chn.broadcast(new Message({ id: __clientId, name }, content));
+  chn.broadcast(new Message({ id: socket.__clientId, name }, content));
 }
 
 function addClient(socket, user) {
