@@ -224,7 +224,7 @@ function onClientMessage(socket, msg) {
   const { __clientId, name } = userRecord;
   const chn = channels.get(channel);
 
-  chn.broadcast(new Message({ __clientId, name }, content));
+  chn.broadcast(new Message({ id: __clientId, name }, content));
 }
 
 function addClient(socket, user) {
