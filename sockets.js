@@ -112,12 +112,9 @@ class Channel {
   }
 
   deteriorate() {
-    console.log('deteriorating channel ' + this.id, this.life, this.users);
     this.life -= 1;
-    this.users.forEach((id) => {
-      const userRecord = clients.get(id);
-      console.log('sending user update data', userRecord.name);
-      userRecord.socket.send(
+    clients.forEach((client) => {
+      client.socket.send(
         JSON.stringify({
           type: 'channel-life-update',
           data: {
@@ -136,11 +133,8 @@ class Channel {
   destroy() {
     clearInterval(this.destructionInterval);
     channels.delete(this.id);
-    this.users.forEach((id) => {
-      const userRecord = clients.get(id);
-      if (userRecord) {
-        sendChannelList(userRecord.socket);
-      }
+    clients.forEach((client) => {
+      sendChannelList(client.socket);
     });
   }
 }
