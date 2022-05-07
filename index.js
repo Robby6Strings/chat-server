@@ -80,10 +80,12 @@ function onClientChannelAction(ws, msg) {
 function joinChannel(socket, id) {
   channels.forEach((channel) => {
     channel.removeUser(socket.__clientId);
-    if (channel.id == id) channel.addUser(socket.__clientId);
 
+    if (channel.id == id) channel.addUser(socket.__clientId);
     if (!channel.users.length) channels.delete(id);
   });
+
+  updateUserChannel(socket, id);
 }
 
 function addChannel(ws, name) {
@@ -91,6 +93,18 @@ function addChannel(ws, name) {
   const newChannel = new Channel(name);
   newChannel.addUser(ws.__clientId);
   channels.set(name, newChannel);
+  sendChannelList(ws);
+
+  updateUserChannel(ws, newChannel.id);
+}
+
+function updateUserChannel(socket, channelId) {
+  const userRecord = clients.get(socket.__clientId);
+  clients.set(socket.__clientId, {
+    name: userRecord.name,
+    selectedChannelId: channelId,
+    socket,
+  });
 }
 
 function sendChannelList(socket) {
@@ -131,12 +145,13 @@ function onClientMessage(socket, msg) {
 }
 
 function addClient(socket, user) {
-  let { name, id } = user;
+  let { name, id, selectedChannelId } = user;
   if (!id) id = crypto.randomUUID();
 
   socket.__clientId = id;
   clients.set(id, {
     name,
+    selectedChannelId,
     socket,
   });
   sendAuthMessage(socket, id);
