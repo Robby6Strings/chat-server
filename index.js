@@ -243,10 +243,7 @@ function addClient(socket, user) {
     );
 
     channel.broadcast(
-      new Message(
-        { id: 1, name: 'Server' },
-        `${clientEntry.name} joined the channel 😁`
-      )
+      new Message({ id: 1, name: 'Server' }, `${name} joined the channel 😁`)
     );
   }
 
