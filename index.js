@@ -119,14 +119,13 @@ function onClientChannelAction(ws, msg) {
 }
 
 function joinChannel(socket, id, doUpdate = true) {
-  channels.forEach((channel) => {
-    channel.removeUser(socket.__clientId);
+  const userRecord = clients.get(socket.__clientId);
+  if (userRecord.selectedChannelId == id) return;
 
-    if (channel.id == id) {
-      channel.addUser(socket.__clientId);
-      channels.set(id, channel);
-    } else if (channel.users.length) {
-      const userRecord = clients.get(socket.__clientId);
+  const chnl = channels.get(userRecord.selectedChannelId);
+  if (chnl) {
+    chnl.removeUser(socket.__clientId);
+    if (chnl.users.length) {
       channel.broadcast(
         new Message(
           { id: 1, name: 'Server' },
@@ -134,7 +133,14 @@ function joinChannel(socket, id, doUpdate = true) {
         )
       );
     } else {
-      channels.delete(channel.id);
+      channels.delete(chnl.id);
+    }
+  }
+
+  channels.forEach((channel) => {
+    if (channel.id == id) {
+      channel.addUser(socket.__clientId);
+      channels.set(id, channel);
     }
   });
 
