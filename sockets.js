@@ -28,7 +28,7 @@ class Channel {
   }
 
   addUser(userId) {
-    console.log('adding user');
+    console.log('adding user', userId);
     const index = this.users.indexOf(userId);
     if (index != -1) {
       console.log('user found, not adding');
