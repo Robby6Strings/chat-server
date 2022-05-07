@@ -85,9 +85,13 @@ function onClientChannelAction(ws, msg) {
 function joinChannel(socket, id) {
   channels.forEach((channel) => {
     channel.removeUser(socket.__clientId);
+    console.log('removed from channel ' + channel.name, channel.users.length);
 
     if (channel.id == id) channel.addUser(socket.__clientId);
-    if (!channel.users.length) channels.delete(id);
+    if (!channel.users.length) {
+      console.log('removing channel');
+      channels.delete(name);
+    }
   });
 
   updateUserChannel(socket, id);
