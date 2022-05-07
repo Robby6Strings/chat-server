@@ -26,7 +26,7 @@ class Channel {
     if (index != -1) return;
 
     this.users.push(id);
-    channels.set(this.name, this);
+    channels.set(this.id, this);
   }
   removeUser(id) {
     console.log('removing user from group ' + this.id, id);
@@ -36,7 +36,7 @@ class Channel {
       return;
     }
     this.users.splice(index, 1);
-    channels.set(this.name, this);
+    channels.set(this.id, this);
   }
 }
 
@@ -90,7 +90,7 @@ function joinChannel(socket, id) {
     if (channel.id == id) channel.addUser(socket.__clientId);
     if (!channel.users.length) {
       console.log('removing channel');
-      channels.delete(name);
+      channels.delete(channel.id);
     }
   });
 
@@ -98,10 +98,17 @@ function joinChannel(socket, id) {
 }
 
 function addChannel(ws, name) {
-  if (channels.get(name)) return;
+  let channelExists = false;
+  channels.forEach((chnl) => {
+    if (chnl.name == name) {
+      channelExists = true;
+    }
+  });
+  if (channelExists) return;
+
   const newChannel = new Channel(name);
   newChannel.addUser(ws.__clientId);
-  channels.set(name, newChannel);
+  channels.set(newChannel.id, newChannel);
   sendChannelList(ws);
 
   updateUserChannel(ws, newChannel.id);
@@ -164,6 +171,7 @@ function addClient(socket, user) {
     selectedChannelId,
     socket,
   });
+  if (channels.find()) socket.send('set-channel', selectedChannelId);
   sendAuthMessage(socket, id);
   sendWelcomeMessage(socket);
 }
