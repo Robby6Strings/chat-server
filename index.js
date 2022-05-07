@@ -61,6 +61,7 @@ wss.on('connection', (ws) => {
 });
 
 function onClientChannelAction(ws, msg) {
+  console.log('onClientChannelAction', msg);
   switch (msg.action) {
     case 'add':
       addChannel(ws, msg.data);
