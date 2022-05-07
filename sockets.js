@@ -28,13 +28,15 @@ class Channel {
   }
 
   addUser(userId) {
-    console.log('adding user', userId);
-    const index = this.users.indexOf(userId);
-    if (index != -1) {
+    console.log('adding user', userid);
+    const channelUser = this.users.find((user) => user.id == userId);
+    if (channelUser) {
       console.log('user found, not adding');
       return;
     }
-    this.users.push(userId);
+
+    const userRecord = clients.get(userId);
+    this.users.push({ id: userId, name: userRecord.name });
 
     const oldServerMessages = this.messages.filter(
       (msg) => msg.targetUser == userId
@@ -42,7 +44,7 @@ class Channel {
     console.log('oldServerMessages', oldServerMessages);
     if (!oldServerMessages.length) {
       // send welcome message
-      const userRecord = clients.get(userId);
+
       console.log('sending channel welcome message', userRecord.name);
       this.broadcast(
         new Message(
@@ -67,14 +69,14 @@ class Channel {
     //   });
     // }
   }
-  removeUser(id) {
-    console.log('removing user from group ' + this.id, id);
-    const index = this.users.indexOf(id);
-    if (index == -1) {
+  removeUser(userId) {
+    console.log('removing user from group ' + this.id, userId);
+    const channelUser = this.users.find((user) => user.id == userId);
+    if (!channelUser) {
       console.log("couldn't find user index");
       return;
     }
-    this.users.splice(index, 1);
+    this.users.splice(this.users.indexOf(channelUser), 1);
     channels.set(this.id, this);
   }
 
