@@ -52,6 +52,8 @@ function sendAuthMessage(socket, userId) {
   );
 }
 function sendWelcomeMessage(socket) {
+  const clientEntry = clients.get(socket.__clientId);
+
   socket.send(
     JSON.stringify({
       type: 'message',
@@ -61,7 +63,7 @@ function sendWelcomeMessage(socket) {
           name: 'Server',
         },
         message: {
-          content: 'Welcome!',
+          content: `Welcome ${clientEntry.name}!`,
           timestamp: new Date(),
         },
       },
