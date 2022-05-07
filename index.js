@@ -54,10 +54,11 @@ class Channel {
   broadcast(msg) {
     this.messages.push(msg);
     channels.set(this.id, this);
+    console.log('broadcasting to channel', this.id);
 
     clients.forEach((client) => {
       if (!this.users.find((x) => x == client.__clientId)) return;
-      console.log('broadcasting to client');
+
       client.send(
         JSON.stringify({
           type: 'new-channel-message',
