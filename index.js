@@ -26,12 +26,17 @@ class Channel {
     if (index != -1) return;
 
     this.users.push(id);
+    channels.set(this.name, this);
   }
   removeUser(id) {
+    console.log('removing user from group ' + this.id, id);
     const index = this.users.indexOf(id);
-    if (index == -1) return;
-
+    if (index == -1) {
+      console.log("couldn't find user index");
+      return;
+    }
     this.users.splice(index, 1);
+    channels.set(this.name, this);
   }
 }
 
