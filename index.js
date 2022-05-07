@@ -126,7 +126,7 @@ function joinChannel(socket, id, doUpdate = true) {
   if (chnl) {
     chnl.removeUser(socket.__clientId);
     if (chnl.users.length) {
-      channel.broadcast(
+      chnl.broadcast(
         new Message(
           { id: 1, name: 'Server' },
           `${userRecord.name} left the channel 😢`
