@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 
 class Message {
-  constructor(user, content) {
+  constructor(user, content, targetUser) {
     this.id = crypto.randomUUID();
     this.user = user;
+    this.targetUser = targetUser;
     this.message = {
       content,
       timestamp: new Date(),
@@ -32,6 +33,21 @@ class Channel {
     if (index != -1) {
       console.log('user found, not adding');
       return;
+    }
+    const oldServerMessages = this.messages.filter(
+      (msg) => msg.targetUser == id
+    );
+    if (oldServerMessages) {
+      this.messages = this.messages.filter((msg) => msg.targetUser != id);
+      this.users.forEach((userId) => {
+        const userRecord = clients.get(userId);
+        userRecord.socket.send(
+          JSON.stringify({
+            type: 'delete-channel-messages',
+            data: oldServerMessages.map((msg) => msg.id),
+          })
+        );
+      });
     }
 
     this.users.push(id);
@@ -69,6 +85,7 @@ class Channel {
                 content: msg.message.content,
                 timestamp: msg.message.timestamp,
               },
+              id: msg.id,
             },
           })
         );
