@@ -78,7 +78,7 @@ function onClientChannelAction(ws, msg) {
 }
 
 function joinChannel(socket, id) {
-  channels.values.forEach((channel) => {
+  channels.forEach((channel) => {
     channel.removeUser(socket.__clientId);
     if (channel.id == id) channel.addUser(socket.__clientId);
 
@@ -95,7 +95,7 @@ function addChannel(ws, name) {
 
 function sendChannelList(socket) {
   const data = [];
-  channels.values.forEach((channel) => {
+  channels.forEach((channel) => {
     data.push({
       id: channel.id,
       name: channel.name,
