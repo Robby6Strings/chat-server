@@ -17,7 +17,13 @@ wss.on('connection', (ws) => {
   ws.send(
     JSON.stringify({
       type: 'message',
-      data: 'Welcome!',
+      data: {
+        user: {
+          id: 1,
+          name: 'Server',
+        },
+        message: 'Welcome!',
+      },
     })
   );
   ws.on('close', () => console.log('Client disconnected'));
