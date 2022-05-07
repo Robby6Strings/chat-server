@@ -129,13 +129,18 @@ function joinChannel(socket, id, doUpdate = true) {
     if (channel.id == id) {
       channel.addUser(socket.__clientId);
       channels.set(id, channel);
-    } 
-    
+    }
+
     if (!channel.users.length) {
       channels.delete(channel.id);
     } else {
       const userRecord = clients.get(socket.__clientId);
-      channel.broadcast(new Message({ id:1, name:'Server' }, `${userRecord.name} left the channel 😢`));
+      channel.broadcast(
+        new Message(
+          { id: 1, name: 'Server' },
+          `${userRecord.name} left the channel 😢`
+        )
+      );
     }
   });
 
@@ -228,7 +233,7 @@ function addClient(socket, user) {
     socket,
   });
 
-  const channel = channels.get(selectedChannelId)
+  const channel = channels.get(selectedChannelId);
   if (channel) {
     socket.send(
       JSON.stringify({
@@ -237,57 +242,21 @@ function addClient(socket, user) {
       })
     );
 
-    channel.broadcast(new Message({ id:1, name:'Server' }, `${clientEntry.name} joined the channel!`));
+    channel.broadcast(
+      new Message(
+        { id: 1, name: 'Server' },
+        `${clientEntry.name} joined the channel 😁`
+      )
+    );
   }
 
   sendAuthMessage(socket, id);
-  sendWelcomeMessage(socket);
 }
 function sendAuthMessage(socket, userId) {
-
   socket.send(
     JSON.stringify({
       type: 'auth',
       data: userId,
-    })
-  );
-}
-function sendWelcomeMessage(socket) {
-  const clientEntry = clients.get(socket.__clientId);
-
-  wss.clients.forEach((client) => {
-    if (client.__clientId == socket.__clientId) return;
-
-    client.send(
-      JSON.stringify({
-        type: 'message',
-        data: {
-          user: {
-            id: 1,
-            name: 'Server',
-          },
-          message: {
-            ,
-            timestamp: new Date(),
-          },
-        },
-      })
-    );
-  });
-
-  socket.send(
-    JSON.stringify({
-      type: 'message',
-      data: {
-        user: {
-          id: 1,
-          name: 'Server',
-        },
-        message: {
-          content: `Welcome ${clientEntry.name}!`,
-          timestamp: new Date(),
-        },
-      },
     })
   );
 }
