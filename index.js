@@ -125,11 +125,7 @@ function joinChannel(socket, id, doUpdate = true) {
     if (channel.id == id) {
       channel.addUser(socket.__clientId);
       channels.set(id, channel);
-    }
-
-    if (!channel.users.length) {
-      channels.delete(channel.id);
-    } else {
+    } else if (channel.users.length) {
       const userRecord = clients.get(socket.__clientId);
       channel.broadcast(
         new Message(
@@ -137,6 +133,8 @@ function joinChannel(socket, id, doUpdate = true) {
           `${userRecord.name} left the channel 😢`
         )
       );
+    } else {
+      channels.delete(channel.id);
     }
   });
 
