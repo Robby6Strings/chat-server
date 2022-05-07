@@ -14,11 +14,22 @@ const wss = new Server({ server });
 const clients = new Map();
 const channels = new Map();
 
+class Message {
+  constructor(user, content) {
+    this.id = crypto.randomUUID();
+    this.userId = user.id;
+    this.userName = user.name;
+    this.content = content;
+    this.timestamp = new Date();
+  }
+}
+
 class Channel {
   constructor(name) {
     this.name = name;
     this.id = crypto.randomUUID();
     this.users = [];
+    this.messages = [];
   }
 
   addUser(id) {
@@ -37,6 +48,35 @@ class Channel {
     }
     this.users.splice(index, 1);
     channels.set(this.id, this);
+  }
+
+  addMessage(user, msg) {
+    this.messages.push(new Message(user, msg));
+    channels.set(this.id, this);
+  }
+
+  broadcast(msg) {
+    this.addMessage(msg);
+    channels.set(this.id, chn);
+
+    clients.forEach((client) => {
+      if (!this.users.find((x) => x == client.__clientId)) return;
+      client.send(
+        JSON.stringify({
+          type: 'new-channel-message',
+          data: {
+            user: {
+              id: client.__clientId,
+              name: client.name,
+            },
+            message: {
+              content,
+              timestamp: msg.timestamp,
+            },
+          },
+        })
+      );
+    });
   }
 }
 
@@ -85,18 +125,36 @@ function onClientChannelAction(ws, msg) {
 function joinChannel(socket, id, doUpdate = true) {
   channels.forEach((channel) => {
     channel.removeUser(socket.__clientId);
-    console.log('removed from channel ' + channel.name, channel.users.length);
 
     if (channel.id == id) {
       channel.addUser(socket.__clientId);
       channels.set(id, channel);
-    } else if (!channel.users.length) {
-      console.log('removing channel');
+    } 
+    
+    if (!channel.users.length) {
       channels.delete(channel.id);
+    } else {
+      const userRecord = clients.get(socket.__clientId);
+      channel.broadcast(new Message({ id:1, name:'Server' }, `${userRecord.name} left the channel 😢`));
     }
   });
 
-  if (doUpdate) updateUserChannel(socket, id);
+  if (doUpdate) {
+    updateUserChannel(socket, id);
+  }
+}
+
+function sendChannelData(socket, channelId) {
+  const { messages, users } = channels.get(channelId);
+  socket.send(
+    JSON.stringify({
+      type: 'channel-data',
+      data: {
+        messages,
+        users,
+      },
+    })
+  );
 }
 
 function addChannel(ws, name) {
@@ -130,14 +188,16 @@ function updateUserChannel(socket, channelId) {
       data: channelId,
     })
   );
+  sendChannelData(socket, channelId);
 }
 
 function sendChannelList(socket) {
   const data = [];
   channels.forEach((channel) => {
+    const { id, name, messages } = channel;
     data.push({
-      id: channel.id,
-      name: channel.name,
+      id,
+      name,
     });
   });
   socket.send(
@@ -149,24 +209,12 @@ function sendChannelList(socket) {
 }
 
 function onClientMessage(socket, msg) {
+  const { content, channel } = msg;
   const userRecord = clients.get(socket.__clientId);
-  wss.clients.forEach((client) => {
-    client.send(
-      JSON.stringify({
-        type: 'message',
-        data: {
-          user: {
-            id: socket.__clientId,
-            name: userRecord.name,
-          },
-          message: {
-            content: msg.content,
-            timestamp: new Date(),
-          },
-        },
-      })
-    );
-  });
+  const { id, name } = userRecord;
+  const chn = channels.get(channel);
+
+  chn.broadcast(new Message({ id, name }, content));
 }
 
 function addClient(socket, user) {
@@ -179,7 +227,9 @@ function addClient(socket, user) {
     selectedChannelId,
     socket,
   });
-  if (channels.get(selectedChannelId))
+
+  const channel = channels.get(selectedChannelId)
+  if (channel) {
     socket.send(
       JSON.stringify({
         type: 'set-channel',
@@ -187,10 +237,14 @@ function addClient(socket, user) {
       })
     );
 
+    channel.broadcast(new Message({ id:1, name:'Server' }, `${clientEntry.name} joined the channel!`));
+  }
+
   sendAuthMessage(socket, id);
   sendWelcomeMessage(socket);
 }
 function sendAuthMessage(socket, userId) {
+
   socket.send(
     JSON.stringify({
       type: 'auth',
@@ -213,7 +267,7 @@ function sendWelcomeMessage(socket) {
             name: 'Server',
           },
           message: {
-            content: `${clientEntry.name} joined!`,
+            ,
             timestamp: new Date(),
           },
         },
