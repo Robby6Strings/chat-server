@@ -7,6 +7,8 @@ const {
   onClientChannelAction,
   onClientMessage,
   addClient,
+  clients,
+  channels,
 } = require('./sockets');
 
 const PORT = process.env.PORT || 3000;
