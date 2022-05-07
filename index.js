@@ -79,6 +79,25 @@ class Channel {
       }
     });
   }
+
+  broadcastState() {
+    this.users.forEach((id) => {
+      const userRecord = clients.get(id);
+      if (userRecord) {
+        sendChannelList(userRecord.socket);
+
+        userRecord.socket.send(
+          JSON.stringify({
+            type: 'channel-data',
+            data: {
+              messages: this.messages,
+              users: this.users,
+            },
+          })
+        );
+      }
+    });
+  }
 }
 
 wss.on('connection', (ws) => {
@@ -131,12 +150,16 @@ function joinChannel(socket, id, doUpdate = true) {
   if (chnl) {
     chnl.removeUser(socket.__clientId);
     if (chnl.users.length) {
+      chnl.broadcastState();
       chnl.broadcast(
         new Message(
           { id: 1, name: 'Server' },
           `${userRecord.name} left the channel 😢`
         )
       );
+      chnl.users.forEach((x) => {
+        const userRecord = clients.get(x);
+      });
     } else {
       channels.delete(chnl.id);
     }
@@ -204,7 +227,7 @@ function updateUserChannel(socket, channelId) {
 function sendChannelList(socket) {
   const data = [];
   channels.forEach((channel) => {
-    const { id, name, messages } = channel;
+    const { id, name } = channel;
     data.push({
       id,
       name,
