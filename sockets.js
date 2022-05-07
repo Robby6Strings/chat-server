@@ -27,11 +27,16 @@ class Channel {
   }
 
   addUser(id) {
+    console.log('adding user');
     const index = this.users.indexOf(id);
-    if (index != -1) return;
+    if (index != -1) {
+      console.log('user found, not adding');
+      return;
+    }
 
     this.users.push(id);
     channels.set(this.id, this);
+    console.log('user added', this.users, channels.get(this.id).users);
   }
   removeUser(id) {
     console.log('removing user from group ' + this.id, id);
