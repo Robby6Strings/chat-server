@@ -173,7 +173,9 @@ function addClient(socket, user) {
     selectedChannelId,
     socket,
   });
-  if (channels.find()) socket.send('set-channel', selectedChannelId);
+  if (channels.get(selectedChannelId))
+    socket.send('set-channel', selectedChannelId);
+
   sendAuthMessage(socket, id);
   sendWelcomeMessage(socket);
 }
