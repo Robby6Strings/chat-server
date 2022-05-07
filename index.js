@@ -57,7 +57,7 @@ class Channel {
 
   broadcast(msg) {
     this.addMessage(msg);
-    channels.set(this.id, chn);
+    channels.set(this.id, this);
 
     clients.forEach((client) => {
       if (!this.users.find((x) => x == client.__clientId)) return;
