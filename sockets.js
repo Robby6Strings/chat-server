@@ -40,7 +40,7 @@ class Channel {
       (msg) => msg.targetUser == userId
     );
     console.log('oldServerMessages', oldServerMessages);
-    if (!oldServerMessages) {
+    if (!oldServerMessages.length) {
       // send welcome message
       const userRecord = clients.get(userId);
       console.log('sending channel welcome message', userRecord.name);
