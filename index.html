@@ -6,9 +6,16 @@
       var ws = new WebSocket(HOST);
       var el;
 
-      ws.onmessage = function (event) {
-        el = document.getElementById('server-time');
-        el.innerHTML = 'Server time: ' + event.data;
+      ws.onmessage = function (e) {
+        const msg = JSON.parse(e.data);
+        //console.log('onMessage', typeof msg);
+        switch (msg.type) {
+          case 'ping':
+            const el = document.getElementById('server-time');
+            el.innerHTML = 'Server time: ' + msg.data;
+          default:
+            break;
+        }
       };
     </script>
   </head>
