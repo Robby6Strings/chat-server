@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 class Message {
   constructor(user, content) {
     this.id = crypto.randomUUID();
