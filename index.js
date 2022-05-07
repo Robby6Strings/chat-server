@@ -82,7 +82,7 @@ function onClientChannelAction(ws, msg) {
   }
 }
 
-function joinChannel(socket, id) {
+function joinChannel(socket, id, doUpdate = true) {
   channels.forEach((channel) => {
     channel.removeUser(socket.__clientId);
     console.log('removed from channel ' + channel.name, channel.users.length);
@@ -96,7 +96,7 @@ function joinChannel(socket, id) {
     }
   });
 
-  updateUserChannel(socket, id);
+  if (doUpdate) updateUserChannel(socket, id);
 }
 
 function addChannel(ws, name) {
@@ -109,8 +109,8 @@ function addChannel(ws, name) {
   if (channelExists) return;
 
   const newChannel = new Channel(name);
-  newChannel.addUser(ws.__clientId);
   channels.set(newChannel.id, newChannel);
+  joinChannel(ws, newChannel.id, false);
   sendChannelList(ws);
 
   updateUserChannel(ws, newChannel.id);
