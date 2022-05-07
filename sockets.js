@@ -18,6 +18,8 @@ class Channel {
     this.users = [];
     this.messages = [];
     this.ownerId = ownerId;
+    this.destructionInterval = null;
+    this.life = 10;
   }
 
   addUser(id) {
@@ -80,11 +82,41 @@ class Channel {
             data: {
               messages: this.messages,
               users: this.users,
+              life: this.life,
             },
           })
         );
       }
     });
+  }
+
+  beginAutomaticDestruction() {
+    this.destructionInterval = setInterval(this.deteriorate, 1000);
+  }
+  cancelAutomaticDestruction() {
+    clearInterval(this.destructionInterval);
+    this.destructionInterval = null;
+  }
+
+  deteriorate() {
+    this.life -= 1;
+    this.users.forEach((id) => {
+      const userRecord = clients.get(id);
+      if (userRecord) {
+        userRecord.socket.send(
+          JSON.stringify({
+            type: 'channel-life-update',
+            data: {
+              id: this.id,
+              life: this.life,
+            },
+          })
+        );
+      }
+    });
+    if (this.life < 1) {
+      this.destroy();
+    }
   }
 
   destroy() {
@@ -100,6 +132,7 @@ class Channel {
 
 function joinChannel(socket, id, doUpdate = true) {
   const userRecord = clients.get(socket.__clientId);
+  //const oldChannel =
   const chnl = channels.get(id);
   if (chnl) {
     chnl.addUser(socket.__clientId);
@@ -118,13 +151,14 @@ function joinChannel(socket, id, doUpdate = true) {
 }
 
 function sendChannelData(socket, channelId) {
-  const { messages, users } = channels.get(channelId);
+  const { messages, users, life } = channels.get(channelId);
   socket.send(
     JSON.stringify({
       type: 'channel-data',
       data: {
         messages,
         users,
+        life,
       },
     })
   );
@@ -169,10 +203,11 @@ function updateUserChannel(socket, channelId) {
 function sendChannelList(socket) {
   const data = [];
   channels.forEach((channel) => {
-    const { id, name } = channel;
+    const { id, name, life } = channel;
     data.push({
       id,
       name,
+      life,
     });
   });
   socket.send(
