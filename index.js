@@ -23,7 +23,7 @@ wss.on('connection', (ws) => {
         addClient(ws, msg.data);
         break;
       case 'message':
-        onClientMessage();
+        onClientMessage(ws, msg.data);
       default:
         break;
     }
@@ -34,6 +34,27 @@ wss.on('connection', (ws) => {
     clients.delete(this.__clientId);
   });
 });
+
+function onClientMessage(ws, msg) {
+  const userRecord = clients.get(ws.__clientId);
+  wss.clients.forEach((client) => {
+    client.send(
+      JSON.stringify({
+        type: 'message',
+        data: {
+          user: {
+            id: ws.__clientId,
+            name: userRecord.name,
+          },
+          message: {
+            content: msg.content,
+            timestamp: new Date(),
+          },
+        },
+      })
+    );
+  });
+}
 
 function addClient(ws, user) {
   let { name, id } = user;
