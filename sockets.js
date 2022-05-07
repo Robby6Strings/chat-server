@@ -22,6 +22,10 @@ class Channel {
     this.life = 10;
   }
 
+  static getInstance(id) {
+    return channels.get(id);
+  }
+
   addUser(id) {
     const index = this.users.indexOf(id);
     if (index != -1) return;
@@ -91,11 +95,14 @@ class Channel {
   }
 
   beginAutomaticDestruction() {
-    this.destructionInterval = setInterval(this.deteriorate, 1000);
+    this.destructionInterval = setInterval(this.deteriorate.bind(this), 1000);
   }
   cancelAutomaticDestruction() {
-    clearInterval(this.destructionInterval);
-    this.destructionInterval = null;
+    this.life = 10;
+    if (this.destructionInterval) {
+      clearInterval(this.destructionInterval);
+      this.destructionInterval = null;
+    }
   }
 
   deteriorate() {
@@ -141,6 +148,7 @@ function joinChannel(socket, id, doUpdate = true) {
 
   const chnl = channels.get(id);
   if (chnl) {
+    chnl.cancelAutomaticDestruction();
     chnl.addUser(socket.__clientId);
     chnl.broadcastState();
     chnl.broadcast(
