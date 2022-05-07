@@ -12,11 +12,12 @@ class Message {
 }
 
 class Channel {
-  constructor(name) {
+  constructor(name, ownerId) {
     this.name = name;
     this.id = crypto.randomUUID();
     this.users = [];
     this.messages = [];
+    this.ownerId = ownerId;
   }
 
   addUser(id) {
@@ -85,6 +86,16 @@ class Channel {
       }
     });
   }
+
+  destroy() {
+    channels.delete(this.id);
+    this.users.forEach((id) => {
+      const userRecord = clients.get(id);
+      if (userRecord) {
+        sendChannelList(userRecord.socket);
+      }
+    });
+  }
 }
 
 function joinChannel(socket, id, doUpdate = true) {
@@ -99,8 +110,6 @@ function joinChannel(socket, id, doUpdate = true) {
         `${userRecord.name} joined the channel 😁`
       )
     );
-  } else {
-    channels.delete(id);
   }
 
   if (doUpdate) {
@@ -121,23 +130,23 @@ function sendChannelData(socket, channelId) {
   );
 }
 
-function addChannel(ws, name) {
-  let channelExists = false;
-  channels.forEach((chnl) => {
-    if (chnl.name == name) {
-      channelExists = true;
-    }
-  });
-  if (channelExists) return;
-
-  const newChannel = new Channel(name);
+function addChannel(socket, name) {
+  const newChannel = new Channel(name, socket.__clientId);
   channels.set(newChannel.id, newChannel);
-  joinChannel(ws, newChannel.id, false);
-  updateUserChannel(ws, newChannel.id);
+  joinChannel(socket, newChannel.id, false);
+  updateUserChannel(socket, newChannel.id);
 
   clients.forEach((client) => {
     sendChannelList(client.socket);
   });
+}
+
+function deleteChannel(socket, id) {
+  const channel = channels.get(id);
+  if (!channel) return;
+  if (!channel.ownerId == socket.__clientId) return;
+
+  channel.destroy();
 }
 
 function updateUserChannel(socket, channelId) {
@@ -185,6 +194,9 @@ function onClientChannelAction(ws, msg) {
       break;
     case 'join':
       joinChannel(ws, msg.data);
+      break;
+    case 'delete':
+      deleteChannel(ws, msg.data);
       break;
     default:
       break;
