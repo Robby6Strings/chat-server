@@ -12,6 +12,28 @@ const server = express()
 
 const wss = new Server({ server });
 const clients = new Map();
+const channels = new Map();
+
+class Channel {
+  constructor(name) {
+    this.name = name;
+    this.id = crypto.randomUUID();
+    this.users = [];
+  }
+
+  addUser(id) {
+    const index = this.users.indexOf(id);
+    if (index != -1) return;
+
+    this.users.push(id);
+  }
+  removeUser(id) {
+    const index = this.users.indexOf(id);
+    if (index == -1) return;
+
+    this.users.splice(index, 1);
+  }
+}
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
@@ -24,6 +46,9 @@ wss.on('connection', (ws) => {
         break;
       case 'message':
         onClientMessage(ws, msg.data);
+        break;
+      case 'channels':
+        onClientChannelAction(ws, msg.data);
       default:
         break;
     }
@@ -35,15 +60,63 @@ wss.on('connection', (ws) => {
   });
 });
 
-function onClientMessage(ws, msg) {
-  const userRecord = clients.get(ws.__clientId);
+function onClientChannelAction(ws, msg) {
+  switch (msg.action) {
+    case 'add':
+      addChannel(ws, msg.data);
+      break;
+    case 'get':
+      sendChannelList(ws);
+      break;
+    case 'join':
+      joinChannel(ws, msg.data);
+      break;
+    default:
+      break;
+  }
+}
+
+function joinChannel(socket, id) {
+  channels.values.forEach((channel) => {
+    channel.removeUser(socket.__clientId);
+    if (channel.id == id) channel.addUser(socket.__clientId);
+
+    if (!channel.users.length) channels.delete(id);
+  });
+}
+
+function addChannel(ws, name) {
+  if (channels.get(name)) return;
+  const newChannel = new Channel(name);
+  newChannel.addUser(ws.__clientId);
+  channels.set(name, newChannel);
+}
+
+function sendChannelList(socket) {
+  const data = [];
+  channels.values.forEach((channel) => {
+    data.push({
+      id: channel.id,
+      name: channel.name,
+    });
+  });
+  socket.send(
+    JSON.stringify({
+      type: 'channels',
+      data,
+    })
+  );
+}
+
+function onClientMessage(socket, msg) {
+  const userRecord = clients.get(socket.__clientId);
   wss.clients.forEach((client) => {
     client.send(
       JSON.stringify({
         type: 'message',
         data: {
           user: {
-            id: ws.__clientId,
+            id: socket.__clientId,
             name: userRecord.name,
           },
           message: {
@@ -56,17 +129,17 @@ function onClientMessage(ws, msg) {
   });
 }
 
-function addClient(ws, user) {
+function addClient(socket, user) {
   let { name, id } = user;
   if (!id) id = crypto.randomUUID();
 
-  ws.__clientId = id;
+  socket.__clientId = id;
   clients.set(id, {
     name,
-    socket: ws,
+    socket,
   });
-  sendAuthMessage(ws, id);
-  sendWelcomeMessage(ws);
+  sendAuthMessage(socket, id);
+  sendWelcomeMessage(socket);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
