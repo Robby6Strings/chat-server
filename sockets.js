@@ -149,17 +149,15 @@ function joinChannel(socket, id, doUpdate = true) {
   }
 
   const chnl = channels.get(id);
-  if (chnl) {
-    chnl.cancelAutomaticDestruction();
-    chnl.addUser(socket.__clientId);
-    chnl.broadcastState();
-    chnl.broadcast(
-      new Message(
-        { id: 1, name: 'Server' },
-        `${userRecord.name} joined the channel 😁`
-      )
-    );
-  }
+  chnl.cancelAutomaticDestruction();
+  chnl.addUser(socket.__clientId);
+  chnl.broadcastState();
+  chnl.broadcast(
+    new Message(
+      { id: 1, name: 'Server' },
+      `${userRecord.name} joined the channel 😁`
+    )
+  );
 
   if (doUpdate) {
     updateUserChannel(socket, id);
