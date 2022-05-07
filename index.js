@@ -223,10 +223,10 @@ function onClientMessage(socket, msg) {
   const userRecord = clients.get(socket.__clientId);
   const { name } = userRecord;
   const chn = channels.get(channel);
-
   console.log('onClientMessage', socket.__clientId, name);
-
-  chn.broadcast(new Message({ id: socket.__clientId, name }, content));
+  if (chn) {
+    chn.broadcast(new Message({ id: socket.__clientId, name }, content));
+  }
 }
 
 function addClient(socket, user) {
