@@ -40,12 +40,13 @@ class Channel {
       (msg) => msg.targetUser == id
     );
     if (!oldServerMessages) {
-      const userRecord = clients.get(userId);
+      // send welcome message
+      const userRecord = clients.get(id);
       this.broadcast(
         new Message(
           { id: 1, name: 'Server' },
           `${userRecord.name} has joined the channel 😁`,
-          userId
+          id
         )
       );
     }
