@@ -34,12 +34,17 @@ class Channel {
       console.log('user found, not adding');
       return;
     }
+    this.users.push(id);
+
     const oldServerMessages = this.messages.filter(
       (msg) => msg.targetUser == id
     );
+    this.messages = this.messages.filter((msg) => msg.targetUser != id);
+    channels.set(this.id, this);
+
     if (oldServerMessages) {
       console.log('removing old server messages');
-      this.messages = this.messages.filter((msg) => msg.targetUser != id);
+
       this.users.forEach((userId) => {
         console.log('sending client:deleteMessage command');
         const userRecord = clients.get(userId);
@@ -51,10 +56,6 @@ class Channel {
         );
       });
     }
-
-    this.users.push(id);
-    channels.set(this.id, this);
-    console.log('user added', this.users, channels.get(this.id).users);
   }
   removeUser(id) {
     console.log('removing user from group ' + this.id, id);
