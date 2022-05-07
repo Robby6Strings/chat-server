@@ -87,8 +87,10 @@ function joinChannel(socket, id) {
     channel.removeUser(socket.__clientId);
     console.log('removed from channel ' + channel.name, channel.users.length);
 
-    if (channel.id == id) channel.addUser(socket.__clientId);
-    if (!channel.users.length) {
+    if (channel.id == id) {
+      channel.addUser(socket.__clientId);
+      channels.set(id, channel);
+    } else if (!channel.users.length) {
       console.log('removing channel');
       channels.delete(channel.id);
     }
