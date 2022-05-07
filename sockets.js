@@ -89,9 +89,7 @@ class Channel {
 
 function joinChannel(socket, id, doUpdate = true) {
   const userRecord = clients.get(socket.__clientId);
-  if (userRecord.selectedChannelId == id) return;
-
-  const chnl = channels.get(userRecord.selectedChannelId);
+  const chnl = channels.get(id);
   if (chnl) {
     chnl.addUser(socket.__clientId);
     chnl.broadcastState();
@@ -101,6 +99,8 @@ function joinChannel(socket, id, doUpdate = true) {
         `${userRecord.name} joined the channel 😁`
       )
     );
+  } else {
+    channels.delete(id);
   }
 
   if (doUpdate) {
