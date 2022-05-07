@@ -154,12 +154,13 @@ function joinChannel(socket, id, doUpdate = true) {
       chnl.broadcast(
         new Message(
           { id: 1, name: 'Server' },
-          `${userRecord.name} left the channel 😢`
+          `${userRecord.name} joined the channel 😁`
         )
       );
-      chnl.users.forEach((x) => {
-        const userRecord = clients.get(x);
-      });
+      // chnl.users.forEach((x) => {
+      //   const userRecord = clients.get(x);
+      //   sendChannelData(userRecord.socket, id);
+      // });
     } else {
       channels.delete(chnl.id);
     }
@@ -263,6 +264,8 @@ function addClient(socket, user) {
     socket,
   });
 
+  sendAuthMessage(socket, id);
+
   const channel = channels.get(selectedChannelId);
   if (channel) {
     socket.send(
@@ -271,13 +274,8 @@ function addClient(socket, user) {
         data: selectedChannelId,
       })
     );
-
-    channel.broadcast(
-      new Message({ id: 1, name: 'Server' }, `${name} joined the channel 😁`)
-    );
+    joinChannel(socket, selectedChannelId);
   }
-
-  sendAuthMessage(socket, id);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
