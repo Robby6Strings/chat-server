@@ -17,8 +17,6 @@ const server = express()
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const wss = new Server({ server });
-const clients = new Map();
-const channels = new Map();
 
 wss.on('connection', (ws) => {
   console.log('Client connected');

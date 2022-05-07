@@ -231,8 +231,13 @@ function sendAuthMessage(socket, userId) {
   );
 }
 
+const clients = new Map();
+const channels = new Map();
+
 module.exports = {
   onClientChannelAction,
   onClientMessage,
   addClient,
+  clients,
+  channels,
 };
