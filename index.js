@@ -127,7 +127,7 @@ function updateUserChannel(socket, channelId) {
   socket.send(
     JSON.stringify({
       type: 'set-channel',
-      data: selectedChannelId,
+      data: channelId,
     })
   );
 }
