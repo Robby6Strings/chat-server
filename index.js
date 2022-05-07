@@ -73,8 +73,11 @@ class Channel {
               },
             },
           })
+        );
+      } else {
+        this.removeUser(id);
       }
-    })
+    });
   }
 }
 
