@@ -114,6 +114,7 @@ function updateUserChannel(socket, channelId) {
     selectedChannelId: channelId,
     socket,
   });
+  socket.send('set-channel', channelId);
 }
 
 function sendChannelList(socket) {
