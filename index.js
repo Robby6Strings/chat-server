@@ -22,7 +22,10 @@ wss.on('connection', (ws) => {
           id: 1,
           name: 'Server',
         },
-        message: 'Welcome!',
+        message: {
+          content: 'Welcome!',
+          timestamp: new Date(),
+        },
       },
     })
   );
