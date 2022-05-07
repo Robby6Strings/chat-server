@@ -38,8 +38,10 @@ class Channel {
       (msg) => msg.targetUser == id
     );
     if (oldServerMessages) {
+      console.log('removing old server messages');
       this.messages = this.messages.filter((msg) => msg.targetUser != id);
       this.users.forEach((userId) => {
+        console.log('sending client:deleteMessage command');
         const userRecord = clients.get(userId);
         userRecord.socket.send(
           JSON.stringify({
