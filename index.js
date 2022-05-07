@@ -203,9 +203,11 @@ function addChannel(ws, name) {
   const newChannel = new Channel(name);
   channels.set(newChannel.id, newChannel);
   joinChannel(ws, newChannel.id, false);
-  sendChannelList(ws);
-
   updateUserChannel(ws, newChannel.id);
+
+  clients.forEach((client) => {
+    sendChannelList(client.socket);
+  });
 }
 
 function updateUserChannel(socket, channelId) {
