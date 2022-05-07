@@ -17,7 +17,6 @@ const channels = new Map();
 class Message {
   constructor(user, content) {
     this.id = crypto.randomUUID();
-    console.log('new message user', user);
     this.user = user;
     this.message = {
       content,
@@ -223,11 +222,11 @@ function onClientMessage(socket, msg) {
   console.log('onClientMessage', msg);
   const { content, channel } = msg;
   const userRecord = clients.get(socket.__clientId);
-  const { id, name } = userRecord;
+  const { __clientId, name } = userRecord;
   console.log('onClientMessage', userRecord);
   const chn = channels.get(channel);
 
-  chn.broadcast(new Message({ id, name }, content));
+  chn.broadcast(new Message({ __clientId, name }, content));
 }
 
 function addClient(socket, user) {
