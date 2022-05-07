@@ -51,13 +51,8 @@ class Channel {
     channels.set(this.id, this);
   }
 
-  addMessage(user, msg) {
-    this.messages.push(new Message(user, msg));
-    channels.set(this.id, this);
-  }
-
   broadcast(msg) {
-    this.addMessage(msg);
+    this.messages.push(msg);
     channels.set(this.id, this);
 
     clients.forEach((client) => {
