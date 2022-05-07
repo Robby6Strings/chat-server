@@ -56,25 +56,25 @@ class Channel {
     channels.set(this.id, this);
     console.log('broadcasting to channel', this.id);
 
-    clients.forEach((client) => {
-      if (!this.users.find((x) => x == client.__clientId)) return;
-
-      client.send(
-        JSON.stringify({
-          type: 'new-channel-message',
-          data: {
-            user: {
-              id: client.__clientId,
-              name: client.name,
+    this.users.forEach((id) => {
+      const userRecord = clients.get(id);
+      if (userRecord) {
+        userRecord.socket.send(
+          JSON.stringify({
+            type: 'new-channel-message',
+            data: {
+              user: {
+                id: msg.user.id,
+                name: msg.user.name,
+              },
+              message: {
+                content: msg.message.content,
+                timestamp: msg.message.timestamp,
+              },
             },
-            message: {
-              content,
-              timestamp: msg.timestamp,
-            },
-          },
-        })
-      );
-    });
+          })
+      }
+    })
   }
 }
 
