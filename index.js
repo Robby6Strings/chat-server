@@ -79,6 +79,26 @@ function sendAuthMessage(socket, userId) {
 function sendWelcomeMessage(socket) {
   const clientEntry = clients.get(socket.__clientId);
 
+  wss.clients.forEach((client) => {
+    if (client.__clientId == socket.__clientId) return;
+
+    client.send(
+      JSON.stringify({
+        type: 'message',
+        data: {
+          user: {
+            id: 1,
+            name: 'Server',
+          },
+          message: {
+            content: `${clientEntry.name} joined!`,
+            timestamp: new Date(),
+          },
+        },
+      })
+    );
+  });
+
   socket.send(
     JSON.stringify({
       type: 'message',
