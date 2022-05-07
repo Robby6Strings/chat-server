@@ -95,6 +95,7 @@ class Channel {
   }
 
   beginAutomaticDestruction() {
+    console.log('beginning auto destruct of channel ' + this.id);
     this.destructionInterval = setInterval(this.deteriorate.bind(this), 1000);
   }
   cancelAutomaticDestruction() {
@@ -106,6 +107,7 @@ class Channel {
   }
 
   deteriorate() {
+    console.log('deteriorating channel ' + this.id, 'old life: ' + this.life);
     this.life -= 1;
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
@@ -121,8 +123,10 @@ class Channel {
         );
       }
     });
+    console.log('deteriorated channel ' + this.id, this.life);
     if (this.life < 1) {
       this.destroy();
+      console.log('channel destroyed');
     }
   }
 
@@ -143,7 +147,7 @@ function joinChannel(socket, id, doUpdate = true) {
   const oldChannel = channels.get(userRecord.selectedChannelId);
   if (oldChannel) {
     oldChannel.removeUser(socket.__clientId);
-    oldChannel.beginAutomaticDestruction();
+    if (!oldChannel.users.length) oldChannel.beginAutomaticDestruction();
   }
 
   const chnl = channels.get(id);
