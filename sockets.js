@@ -28,7 +28,7 @@ class Channel {
   }
 
   addUser(userId) {
-    console.log('adding user', userid);
+    console.log('adding user', userId);
     const channelUser = this.users.find((user) => user.id == userId);
     if (channelUser) {
       console.log('user found, not adding');
