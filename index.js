@@ -148,30 +148,15 @@ function joinChannel(socket, id, doUpdate = true) {
 
   const chnl = channels.get(userRecord.selectedChannelId);
   if (chnl) {
-    chnl.removeUser(socket.__clientId);
-    if (chnl.users.length) {
-      chnl.broadcastState();
-      chnl.broadcast(
-        new Message(
-          { id: 1, name: 'Server' },
-          `${userRecord.name} joined the channel 😁`
-        )
-      );
-      // chnl.users.forEach((x) => {
-      //   const userRecord = clients.get(x);
-      //   sendChannelData(userRecord.socket, id);
-      // });
-    } else {
-      channels.delete(chnl.id);
-    }
+    chnl.addUser(socket.__clientId);
+    chnl.broadcastState();
+    chnl.broadcast(
+      new Message(
+        { id: 1, name: 'Server' },
+        `${userRecord.name} joined the channel 😁`
+      )
+    );
   }
-
-  channels.forEach((channel) => {
-    if (channel.id == id) {
-      channel.addUser(socket.__clientId);
-      channels.set(id, channel);
-    }
-  });
 
   if (doUpdate) {
     updateUserChannel(socket, id);
