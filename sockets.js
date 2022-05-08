@@ -181,26 +181,12 @@ function joinChannel(socket, channelId) {
   if (!channel) {
     clearUserChannel(socket);
   } else {
+    chnl.addUser(socket.__clientId);
     updateUserChannel(socket, channelId);
     const chnl = channels.get(channelId);
     chnl.cancelAutomaticDestruction();
-    chnl.addUser(socket.__clientId);
     chnl.broadcastState();
   }
-}
-
-function sendChannelData(socket, channelId) {
-  const { messages, users, life } = channels.get(channelId);
-  socket.send(
-    JSON.stringify({
-      type: 'channel-data',
-      data: {
-        messages,
-        users,
-        life,
-      },
-    })
-  );
 }
 
 function addChannel(socket, name) {
@@ -235,7 +221,6 @@ function updateUserChannel(socket, channelId) {
       data: channelId,
     })
   );
-  sendChannelData(socket, channelId);
 }
 
 function clearUserChannel(socket) {
