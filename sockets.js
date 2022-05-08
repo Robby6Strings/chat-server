@@ -223,6 +223,12 @@ function updateChannel(socket, data) {
   if (channel.ownerId != socket.__clientId) return;
 
   channel.update(name, password);
+  socket.send(
+    JSON.stringify({
+      type: 'channel-saved',
+      data: 200,
+    })
+  );
 }
 
 function updateUserChannel(socket, channelId) {
