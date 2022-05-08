@@ -47,7 +47,7 @@ wss.on('connection', (ws) => {
 setInterval(() => {
   const activeClientIdList = [];
   wss.clients.forEach((client) => {
-    if (!client.__clientId) return wss.clients.delete(client);
+    //if (!client.__clientId) return wss.clients.delete(client);
     activeClientIdList.push(client.__clientId);
 
     client.send(
@@ -61,10 +61,10 @@ setInterval(() => {
   console.log('activeClientIdList', activeClientIdList);
 
   const deleteList = [];
-  clients.forEach((client) => {
-    if (activeClientIdList.indexOf(client.__clientId) > -1) return;
+  clients.forEach((_, clientId) => {
+    if (activeClientIdList.indexOf(clientId) > -1) return;
 
-    deleteList.push(client.__clientId);
+    deleteList.push(clientId);
   });
 
   deleteList.forEach((id) => {
