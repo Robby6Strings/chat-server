@@ -212,7 +212,7 @@ function joinChannel(socket, channelId, password) {
   if (!channel) {
     clearUserChannel(socket);
   } else {
-    if (channel.password) {
+    if (channel.password && !channel.ownerId == socket.__clientId) {
       if (!password) {
         return channel.confirmPassword(socket);
       }
