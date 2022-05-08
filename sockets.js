@@ -175,9 +175,30 @@ class Channel {
       sendChannelList(client.socket);
     });
   }
+  confirmPassword(socket) {
+    socket.send(
+      JSON.stringify({
+        type: 'channel-password-prompt',
+        data: this.name,
+        error: null,
+      })
+    );
+  }
+  validatePassword(password) {
+    return this.password == password;
+  }
+  badPassword(socket) {
+    socket.send(
+      JSON.stringify({
+        type: 'channel-password-prompt',
+        data: this.name,
+        error: 'incorrect password',
+      })
+    );
+  }
 }
 
-function joinChannel(socket, channelId) {
+function joinChannel(socket, channelId, password) {
   const userRecord = clients.get(socket.__clientId);
 
   if (userRecord.selectedChannelId != channelId) {
@@ -191,6 +212,15 @@ function joinChannel(socket, channelId) {
   if (!channel) {
     clearUserChannel(socket);
   } else {
+    if (channel.password) {
+      if (!password) {
+        return channel.confirmPassword(socket);
+      }
+      if (!channel.validatePassword(password)) {
+        return channel.badPassword(socket);
+      }
+    }
+
     channel.addUser(socket.__clientId);
     updateUserChannel(socket, channelId);
     channel.cancelAutomaticDestruction();
@@ -291,7 +321,7 @@ function onClientChannelAction(ws, msg) {
       sendChannelList(ws);
       break;
     case 'join':
-      joinChannel(ws, msg.data);
+      joinChannel(ws, msg.data, msg.password);
       break;
     case 'delete':
       deleteChannel(ws, msg.data);
