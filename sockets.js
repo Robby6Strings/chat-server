@@ -284,12 +284,7 @@ function onClientMessage(socket, msg) {
   if (chn) {
     chn.broadcast(new Message({ id: socket.__clientId, name }, content));
   } else {
-    socket.send(
-      JSON.stringify({
-        type: 'set-channel',
-        data: null,
-      })
-    );
+    clearUserChannel(socket);
   }
 }
 function addClient(socket, user) {
