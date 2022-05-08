@@ -212,6 +212,13 @@ function joinChannel(socket, channelId, password) {
   if (!channel) {
     clearUserChannel(socket);
   } else {
+    console.log(
+      'joining channel',
+      channel.password,
+      password,
+      channel.ownerId,
+      socket.__clientId
+    );
     if (channel.password && !channel.ownerId == socket.__clientId) {
       if (!password) {
         return channel.confirmPassword(socket);
