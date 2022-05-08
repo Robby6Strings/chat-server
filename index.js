@@ -40,21 +40,33 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', (socket) => {
-    console.log('Client disconnected', socket.__clientId);
-    channels.forEach((chnl) => {
-      chnl.removeUser(socket.__clientId);
-    });
-    clients.delete(socket.__clientId);
+    console.log('Client disconnected', socket);
   });
 });
 
 setInterval(() => {
+  const activeClientIdList = [];
   wss.clients.forEach((client) => {
+    activeClientIdList.push(client.__clientId);
+
     client.send(
       JSON.stringify({
         type: 'ping',
         data: new Date().toTimeString(),
       })
     );
+  });
+
+  const deleteList = [];
+  clients.forEach((client) => {
+    if (activeClientIdList.indexOf(client.__clientId) > -1) return;
+    channels.forEach((chnl) => {
+      chnl.removeUser(client.__clientId);
+    });
+    deleteList.push(client.__clientId);
+  });
+
+  deleteList.forEach((id) => {
+    clients.delete(id);
   });
 }, 3000);
