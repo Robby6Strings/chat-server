@@ -129,6 +129,10 @@ class Channel {
     }
     this.life = 10;
     channels.set(this.id, this);
+
+    clients.forEach((client) => {
+      sendChannelList(client.socket);
+    });
   }
 
   deteriorate() {
