@@ -28,7 +28,7 @@ class Channel {
   }
 
   addUser(userId) {
-    console.log('adding user', userId);
+    console.log('adding user', userId, this.users);
     const channelUser = this.users.find((user) => user.id == userId);
     if (channelUser) {
       console.log('user found, not adding');
@@ -37,40 +37,30 @@ class Channel {
 
     const userRecord = clients.get(userId);
     this.users.push({ id: userId, name: userRecord.name });
+    channels.set(this.id, this);
 
+    this.sendWelcomeMessage(userId, userRecord.name);
+  }
+
+  sendWelcomeMessage(userId, userName) {
     const oldServerMessages = this.messages.filter(
-      (msg) => msg.targetUser == userId
+      (msg) => msg.targetUser == userId && msg.user.id == 1
     );
     console.log('oldServerMessages', oldServerMessages);
     if (!oldServerMessages.length) {
-      // send welcome message
-
-      console.log('sending channel welcome message', userRecord.name);
+      console.log('sending channel welcome message', userName);
       this.broadcast(
         new Message(
           { id: 1, name: 'Server' },
-          `${userRecord.name} has joined the channel 😁`,
+          `${userName} has joined the channel 😁`,
           userId
         )
       );
     }
-
-    channels.set(this.id, this);
-
-    // if (oldServerMessages) {
-    //   this.users.forEach((userId) => {
-
-    //     userRecord.socket.send(
-    //       JSON.stringify({
-    //         type: 'delete-channel-messages',
-    //         data: oldServerMessages.map((msg) => msg.id),
-    //       })
-    //     );
-    //   });
-    // }
   }
+
   removeUser(userId) {
-    console.log('removing user from group ' + this.id, userId);
+    console.log('removing user from group ' + this.id, userId, this.users);
     const channelUser = this.users.find((user) => user.id == userId);
     if (!channelUser) {
       console.log("couldn't find user index");
@@ -87,29 +77,22 @@ class Channel {
 
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
-      if (userRecord) {
-        userRecord.socket.send(
-          JSON.stringify({
-            type: 'new-channel-message',
-            data: {
-              user: {
-                id: msg.user.id,
-                name: msg.user.name,
-              },
-              message: {
-                content: msg.message.content,
-                timestamp: msg.message.timestamp,
-              },
-              id: msg.id,
+      userRecord.socket.send(
+        JSON.stringify({
+          type: 'new-channel-message',
+          data: {
+            user: {
+              id: msg.user.id,
+              name: msg.user.name,
             },
-          })
-        );
-      } else {
-        console.log(
-          'tried to broadcast to channel user but did not find them in clients list.'
-        );
-        this.removeUser(id);
-      }
+            message: {
+              content: msg.message.content,
+              timestamp: msg.message.timestamp,
+            },
+            id: msg.id,
+          },
+        })
+      );
     });
   }
 
@@ -117,20 +100,17 @@ class Channel {
     console.log('channel ' + this.id + ' - broadcasting state');
     this.users.forEach((id) => {
       const userRecord = clients.get(id);
-      if (userRecord) {
-        sendChannelList(userRecord.socket);
-
-        userRecord.socket.send(
-          JSON.stringify({
-            type: 'channel-data',
-            data: {
-              messages: this.messages,
-              users: this.users,
-              life: this.life,
-            },
-          })
-        );
-      }
+      sendChannelList(userRecord.socket);
+      userRecord.socket.send(
+        JSON.stringify({
+          type: 'channel-data',
+          data: {
+            messages: this.messages,
+            users: this.users,
+            life: this.life,
+          },
+        })
+      );
     });
   }
 
@@ -185,10 +165,10 @@ class Channel {
   }
 }
 
-function joinChannel(socket, id, doUpdate = true) {
+function joinChannel(socket, channelId) {
   const userRecord = clients.get(socket.__clientId);
 
-  if (userRecord.selectedChannelId != id) {
+  if (userRecord.selectedChannelId != channelId) {
     const oldChannel = channels.get(userRecord.selectedChannelId);
     if (oldChannel) {
       oldChannel.removeUser(socket.__clientId);
@@ -197,14 +177,15 @@ function joinChannel(socket, id, doUpdate = true) {
       }
     }
   }
-
-  const chnl = channels.get(id);
-  chnl.cancelAutomaticDestruction();
-  chnl.addUser(socket.__clientId);
-  chnl.broadcastState();
-
-  if (doUpdate) {
-    updateUserChannel(socket, id);
+  const channel = channels.get(channelId);
+  if (!channel) {
+    clearUserChannel(socket);
+  } else {
+    updateUserChannel(socket, channelId);
+    const chnl = channels.get(channelId);
+    chnl.cancelAutomaticDestruction();
+    chnl.addUser(socket.__clientId);
+    chnl.broadcastState();
   }
 }
 
@@ -225,8 +206,7 @@ function sendChannelData(socket, channelId) {
 function addChannel(socket, name) {
   const newChannel = new Channel(name, socket.__clientId);
   channels.set(newChannel.id, newChannel);
-  joinChannel(socket, newChannel.id, false);
-  updateUserChannel(socket, newChannel.id);
+  joinChannel(socket, newChannel.id);
 
   clients.forEach((client) => {
     sendChannelList(client.socket);
@@ -256,6 +236,20 @@ function updateUserChannel(socket, channelId) {
     })
   );
   sendChannelData(socket, channelId);
+}
+
+function clearUserChannel(socket) {
+  clients.set(socket.__clientId, {
+    name: userRecord.name,
+    selectedChannelId: null,
+    socket,
+  });
+  socket.send(
+    JSON.stringify({
+      type: 'set-channel',
+      data: null,
+    })
+  );
 }
 
 function sendChannelList(socket) {
@@ -296,13 +290,20 @@ function onClientChannelAction(ws, msg) {
   }
 }
 function onClientMessage(socket, msg) {
-  const { content, channel } = msg;
+  const { content } = msg;
   const userRecord = clients.get(socket.__clientId);
-  const { name } = userRecord;
-  const chn = channels.get(channel);
+  const { name, selectedChannelId } = userRecord;
+  const chn = channels.get(selectedChannelId);
   console.log('onClientMessage', socket.__clientId, name);
   if (chn) {
     chn.broadcast(new Message({ id: socket.__clientId, name }, content));
+  } else {
+    socket.send(
+      JSON.stringify({
+        type: 'set-channel',
+        data: null,
+      })
+    );
   }
 }
 function addClient(socket, user) {
@@ -317,17 +318,7 @@ function addClient(socket, user) {
   });
 
   sendAuthMessage(socket, id);
-
-  const channel = channels.get(selectedChannelId);
-  if (channel) {
-    socket.send(
-      JSON.stringify({
-        type: 'set-channel',
-        data: selectedChannelId,
-      })
-    );
-    joinChannel(socket, selectedChannelId);
-  }
+  joinChannel(socket, selectedChannelId);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
