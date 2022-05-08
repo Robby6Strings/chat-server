@@ -47,6 +47,7 @@ wss.on('connection', (ws) => {
 setInterval(() => {
   const activeClientIdList = [];
   wss.clients.forEach((client) => {
+    if (!client.__clientId) return wss.clients.delete(client);
     activeClientIdList.push(client.__clientId);
 
     client.send(
@@ -62,13 +63,14 @@ setInterval(() => {
   const deleteList = [];
   clients.forEach((client) => {
     if (activeClientIdList.indexOf(client.__clientId) > -1) return;
-    channels.forEach((chnl) => {
-      chnl.removeUser(client.__clientId);
-    });
+
     deleteList.push(client.__clientId);
   });
 
   deleteList.forEach((id) => {
+    channels.forEach((chnl) => {
+      chnl.removeUser(id);
+    });
     clients.delete(id);
   });
 }, 3000);
