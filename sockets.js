@@ -221,9 +221,15 @@ function joinChannel(socket, channelId, password) {
     );
     if (channel.password && !channel.ownerId == socket.__clientId) {
       if (!password) {
+        console.log(
+          'tried to join password-protected channel without password'
+        );
         return channel.confirmPassword(socket);
       }
       if (!channel.validatePassword(password)) {
+        console.log(
+          'tried to join password-protected channel with incorrect password'
+        );
         return channel.badPassword(socket);
       }
     }
