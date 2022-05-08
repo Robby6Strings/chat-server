@@ -40,7 +40,7 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', (socket) => {
-    console.log('Client disconnected');
+    console.log('Client disconnected', socket.__clientId);
     channels.forEach((chnl) => {
       chnl.removeUser(socket.__clientId);
     });
