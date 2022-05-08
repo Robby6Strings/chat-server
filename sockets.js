@@ -111,7 +111,6 @@ class Channel {
           data: {
             messages: this.messages,
             users: this.users,
-            life: this.life,
           },
         })
       );
@@ -167,6 +166,7 @@ function joinChannel(socket, channelId) {
     const oldChannel = channels.get(userRecord.selectedChannelId);
     if (oldChannel) {
       oldChannel.removeUser(socket.__clientId);
+      oldChannel.broadcastState();
     }
   }
   const channel = channels.get(channelId);
