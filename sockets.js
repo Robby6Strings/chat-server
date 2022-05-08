@@ -15,6 +15,7 @@ class Message {
 class Channel {
   constructor(name, ownerId) {
     this.name = name;
+    this.password = '';
     this.id = crypto.randomUUID();
     this.users = [];
     this.messages = [];
@@ -166,6 +167,14 @@ class Channel {
       sendChannelList(client.socket);
     });
   }
+  update(name, password) {
+    this.name = name;
+    this.password = password;
+    channels.set(this.id, this);
+    clients.forEach((client) => {
+      sendChannelList(client.socket);
+    });
+  }
 }
 
 function joinChannel(socket, channelId) {
@@ -205,6 +214,15 @@ function deleteChannel(socket, id) {
   if (channel.ownerId != socket.__clientId) return;
 
   channel.destroy();
+}
+
+function updateChannel(socket, data) {
+  const { id, name, password, expirey } = data;
+  const channel = channels.get(id);
+  if (!channel) return;
+  if (channel.ownerId != socket.__clientId) return;
+
+  channel.update(name, password);
 }
 
 function updateUserChannel(socket, channelId) {
@@ -271,6 +289,9 @@ function onClientChannelAction(ws, msg) {
       break;
     case 'delete':
       deleteChannel(ws, msg.data);
+      break;
+    case 'update':
+      updateChannel(ws, msg.data);
       break;
     default:
       break;
