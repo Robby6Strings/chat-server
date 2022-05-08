@@ -155,6 +155,11 @@ class Channel {
   }
 
   destroy() {
+    this.users.forEach(({ id }) => {
+      const userRecord = clients.get(id);
+      clearUserChannel(userRecord.socket);
+    });
+
     clearInterval(this.destructionInterval);
     channels.delete(this.id);
     clients.forEach((client) => {
