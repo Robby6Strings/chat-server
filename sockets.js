@@ -69,6 +69,9 @@ class Channel {
     }
     this.users.splice(this.users.indexOf(channelUser), 1);
     channels.set(this.id, this);
+    if (!this.users.length) {
+      this.beginAutomaticDestruction();
+    }
   }
 
   broadcast(msg) {
@@ -118,6 +121,7 @@ class Channel {
   beginAutomaticDestruction() {
     console.log('beginning auto destruct of channel ' + this.id);
     this.destructionInterval = setInterval(this.deteriorate.bind(this), 1000);
+    channels.set(this.id, this);
   }
   cancelAutomaticDestruction() {
     if (this.destructionInterval) {
@@ -125,6 +129,7 @@ class Channel {
       this.destructionInterval = null;
     }
     this.life = 10;
+    channels.set(this.id, this);
   }
 
   deteriorate() {
@@ -162,9 +167,6 @@ function joinChannel(socket, channelId) {
     const oldChannel = channels.get(userRecord.selectedChannelId);
     if (oldChannel) {
       oldChannel.removeUser(socket.__clientId);
-      if (!oldChannel.users.length) {
-        oldChannel.beginAutomaticDestruction();
-      }
     }
   }
   const channel = channels.get(channelId);
