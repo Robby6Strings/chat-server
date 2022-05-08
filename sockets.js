@@ -219,7 +219,7 @@ function joinChannel(socket, channelId, password) {
       channel.ownerId,
       socket.__clientId
     );
-    if (channel.password && !channel.ownerId == socket.__clientId) {
+    if (channel.password && channel.ownerId != socket.__clientId) {
       if (!password) {
         console.log(
           'tried to join password-protected channel without password'
