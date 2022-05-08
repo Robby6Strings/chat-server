@@ -239,6 +239,7 @@ function updateUserChannel(socket, channelId) {
 }
 
 function clearUserChannel(socket) {
+  const userRecord = clients.get(socket.__clientId);
   clients.set(socket.__clientId, {
     name: userRecord.name,
     selectedChannelId: null,
