@@ -236,11 +236,12 @@ function clearUserChannel(socket) {
 function sendChannelList(socket) {
   const data = [];
   channels.forEach((channel) => {
-    const { id, name, life } = channel;
+    const { id, name, life, ownerId } = channel;
     data.push({
       id,
       name,
       life,
+      ownerId,
     });
   });
   socket.send(
