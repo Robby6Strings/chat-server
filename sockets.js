@@ -105,6 +105,9 @@ class Channel {
           })
         );
       } else {
+        console.log(
+          'tried to broadcast to channel user but did not find them in clients list.'
+        );
         this.removeUser(id);
       }
     });
@@ -184,12 +187,14 @@ class Channel {
 
 function joinChannel(socket, id, doUpdate = true) {
   const userRecord = clients.get(socket.__clientId);
-  const oldChannel = channels.get(userRecord.selectedChannelId);
 
-  if (oldChannel) {
-    oldChannel.removeUser(socket.__clientId);
-    if (!oldChannel.users.length) {
-      oldChannel.beginAutomaticDestruction();
+  if (userRecord.selectedChannelId != id) {
+    const oldChannel = channels.get(userRecord.selectedChannelId);
+    if (oldChannel) {
+      oldChannel.removeUser(socket.__clientId);
+      if (!oldChannel.users.length) {
+        oldChannel.beginAutomaticDestruction();
+      }
     }
   }
 
@@ -231,7 +236,7 @@ function addChannel(socket, name) {
 function deleteChannel(socket, id) {
   const channel = channels.get(id);
   if (!channel) return;
-  if (!channel.ownerId == socket.__clientId) return;
+  if (channel.ownerId != socket.__clientId) return;
 
   channel.destroy();
 }

@@ -44,7 +44,7 @@ wss.on('connection', (ws) => {
     channels.forEach((chnl) => {
       chnl.removeUser(socket.__clientId);
     });
-    clients.delete(this.__clientId);
+    clients.delete(socket.__clientId);
   });
 });
 
