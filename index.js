@@ -57,6 +57,8 @@ setInterval(() => {
     );
   });
 
+  console.log('activeClientIdList', activeClientIdList);
+
   const deleteList = [];
   clients.forEach((client) => {
     if (activeClientIdList.indexOf(client.__clientId) > -1) return;
