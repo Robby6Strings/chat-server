@@ -199,18 +199,9 @@ class Channel {
 }
 
 function joinChannel(socket, channelId, password) {
-  const userRecord = clients.get(socket.__clientId);
-
-  if (userRecord.selectedChannelId != channelId) {
-    const oldChannel = channels.get(userRecord.selectedChannelId);
-    if (oldChannel) {
-      oldChannel.removeUser(socket.__clientId);
-      oldChannel.broadcastState();
-    }
-  }
   const channel = channels.get(channelId);
   if (!channel) {
-    clearUserChannel(socket);
+    return clearUserChannel(socket);
   } else {
     console.log(
       'joining channel',
@@ -238,6 +229,15 @@ function joinChannel(socket, channelId, password) {
     updateUserChannel(socket, channelId);
     channel.cancelAutomaticDestruction();
     channel.broadcastState();
+  }
+  const userRecord = clients.get(socket.__clientId);
+  const oldChannelId = userRecord.selectedChannelId;
+  if (oldChannelId != channelId) {
+    const oldChannel = channels.get(oldChannelId);
+    if (oldChannel) {
+      oldChannel.removeUser(socket.__clientId);
+      oldChannel.broadcastState();
+    }
   }
 }
 
