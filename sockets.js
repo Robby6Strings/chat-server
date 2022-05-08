@@ -28,7 +28,7 @@ class Channel {
   }
 
   addUser(userId) {
-    console.log('adding user', userId, this.users);
+    console.log('adding user to' + this.id, userId, this.users);
     const channelUser = this.users.find((user) => user.id == userId);
     if (channelUser) {
       console.log('user found, not adding');
@@ -38,6 +38,7 @@ class Channel {
     const userRecord = clients.get(userId);
     this.users.push({ id: userId, name: userRecord.name });
     channels.set(this.id, this);
+    console.log('added user to' + this.id, userId, this.users);
 
     this.sendWelcomeMessage(userId, userRecord.name);
   }
@@ -75,7 +76,7 @@ class Channel {
     channels.set(this.id, this);
     console.log('broadcasting message to channel ' + this.id, msg);
 
-    this.users.forEach((id) => {
+    this.users.forEach(({ id }) => {
       const userRecord = clients.get(id);
       userRecord.socket.send(
         JSON.stringify({
@@ -98,7 +99,7 @@ class Channel {
 
   broadcastState() {
     console.log('channel ' + this.id + ' - broadcasting state');
-    this.users.forEach((id) => {
+    this.users.forEach(({ id }) => {
       const userRecord = clients.get(id);
       sendChannelList(userRecord.socket);
       userRecord.socket.send(
