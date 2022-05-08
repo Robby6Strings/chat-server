@@ -70,6 +70,7 @@ setInterval(() => {
   deleteList.forEach((id) => {
     channels.forEach((chnl) => {
       chnl.removeUser(id);
+      chnl.broadcastState();
     });
     clients.delete(id);
   });
