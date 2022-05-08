@@ -119,22 +119,11 @@ class Channel {
     this.destructionInterval = setInterval(this.deteriorate.bind(this), 1000);
   }
   cancelAutomaticDestruction() {
-    this.life = 10;
     if (this.destructionInterval) {
       clearInterval(this.destructionInterval);
       this.destructionInterval = null;
     }
-    clients.forEach((client) => {
-      client.socket.send(
-        JSON.stringify({
-          type: 'channel-life-update',
-          data: {
-            id: this.id,
-            life: this.life,
-          },
-        })
-      );
-    });
+    this.life = 10;
   }
 
   deteriorate() {
@@ -181,11 +170,10 @@ function joinChannel(socket, channelId) {
   if (!channel) {
     clearUserChannel(socket);
   } else {
-    chnl.addUser(socket.__clientId);
+    channel.addUser(socket.__clientId);
     updateUserChannel(socket, channelId);
-    const chnl = channels.get(channelId);
-    chnl.cancelAutomaticDestruction();
-    chnl.broadcastState();
+    channel.cancelAutomaticDestruction();
+    channel.broadcastState();
   }
 }
 
