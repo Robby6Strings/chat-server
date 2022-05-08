@@ -179,7 +179,7 @@ class Channel {
     socket.send(
       JSON.stringify({
         type: 'channel-password-prompt',
-        data: this.name,
+        data: this.id,
         error: null,
       })
     );
