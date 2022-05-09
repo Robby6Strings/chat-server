@@ -179,17 +179,19 @@ class Channel {
 
   deteriorate() {
     this.life -= 1;
-    clients.forEach((client) => {
-      client.socket.send(
-        JSON.stringify({
-          type: 'channel-life-update',
-          data: {
-            id: this.id,
-            life: this.life,
-          },
-        })
-      );
-    });
+    if (this.life < 10) {
+      clients.forEach((client) => {
+        client.socket.send(
+          JSON.stringify({
+            type: 'channel-life-update',
+            data: {
+              id: this.id,
+              life: this.life,
+            },
+          })
+        );
+      });
+    }
     if (this.life < 1) {
       this.destroy();
       console.log('channel destroyed');
