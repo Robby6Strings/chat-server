@@ -373,6 +373,7 @@ function onClientMessage(socket, msg) {
 
 function updateUser(socket, name) {
   const userRecord = clients.get(socket.__clientId);
+  console.log('updateUser', socket.__clientId);
   userRecord.name = name;
   clients.set(socket.__clientId, userRecord);
 
