@@ -23,7 +23,8 @@ class Channel {
     this.messages = [];
     this.ownerId = ownerId;
     this.destructionInterval = null;
-    this.life = 10;
+    this.maxLife = 60;
+    this.life = 60;
   }
 
   static getInstance(id) {
@@ -168,7 +169,7 @@ class Channel {
       clearInterval(this.destructionInterval);
       this.destructionInterval = null;
     }
-    this.life = 10;
+    this.life = this.maxLife;
     channels.set(this.id, this);
 
     clients.forEach((client) => {
