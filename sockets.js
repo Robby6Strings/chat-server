@@ -377,11 +377,6 @@ function updateUser(socket, name) {
   userRecord.name = name;
   clients.set(socket.__clientId, userRecord);
 
-  const chnl = channels.get(userRecord.selectedChannelId);
-  chnl.users.find((usr) => usr.id == socket.__clientId).name = name;
-  channels.set(chnl.id, chnl);
-  chnl.broadcastState();
-
   socket.send(
     JSON.stringify({
       type: 'user',
@@ -389,6 +384,13 @@ function updateUser(socket, name) {
       data: name,
     })
   );
+
+  const chnl = channels.get(userRecord.selectedChannelId);
+  if (!chnl) return;
+
+  chnl.users.find((usr) => usr.id == socket.__clientId).name = name;
+  channels.set(chnl.id, chnl);
+  chnl.broadcastState();
 }
 
 function addClient(socket, user) {
