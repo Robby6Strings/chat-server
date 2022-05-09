@@ -44,6 +44,47 @@ class Channel {
     this.sendWelcomeMessage(userId, userRecord.name);
   }
 
+  onUserNameUpdate(id, name) {
+    let changeApplied = false;
+    // user meta
+    const userMatch = this.users.find((user) => user.id == id);
+    if (userMatch) {
+      userMatch.name = name;
+      changeApplied = true;
+    }
+
+    // user messages
+    const userMessages = this.messages.filter((msg) => {
+      return msg.user.id == id;
+    });
+    if (userMessages.length) {
+      userMessages.forEach((msg) => {
+        msg.user.name = name;
+      });
+      changeApplied = true;
+    }
+
+    //user-referenced servcer messages
+    const userServerMessages = this.messages.filter((msg) => {
+      return msg.user.id == 1 && msg.targetUser.id == id;
+    });
+    if (userServerMessages.length) {
+      const userRecord = clients.get(id);
+      userServerMessages.forEach((msg) => {
+        msg.message.content = msg.message.content.replaceAll(
+          userRecord.name,
+          name
+        );
+      });
+      changeApplied = true;
+    }
+
+    if (changeApplied) {
+      channels.set(this.id, this);
+      this.broadcastState();
+    }
+  }
+
   sendWelcomeMessage(userId, userName) {
     const oldServerMessages = this.messages.filter(
       (msg) => msg.targetUser == userId && msg.user.id == 1
@@ -385,12 +426,9 @@ function updateUser(socket, name) {
     })
   );
 
-  const chnl = channels.get(userRecord.selectedChannelId);
-  if (!chnl) return;
-
-  chnl.users.find((usr) => usr.id == socket.__clientId).name = name;
-  channels.set(chnl.id, chnl);
-  chnl.broadcastState();
+  channels.forEach((channel) => {
+    channel.onUserNameUpdate(socket.__clientId, name);
+  });
 }
 
 function addClient(socket, user) {
