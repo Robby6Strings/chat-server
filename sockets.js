@@ -71,6 +71,7 @@ class Channel {
     if (userServerMessages.length) {
       const userRecord = clients.get(id);
       userServerMessages.forEach((msg) => {
+        console.log('replacing message content', msg.message.content);
         msg.message.content = msg.message.content.replaceAll(
           userRecord.name,
           name
