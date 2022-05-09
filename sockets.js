@@ -403,7 +403,7 @@ function addClient(socket, user) {
     socket,
   });
 
-  sendAuthMessage(socket, id);
+  sendAuthMessage(socket, socket.__clientId);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
