@@ -391,12 +391,12 @@ function updateUser(socket, name) {
 }
 
 function addClient(socket, user) {
-  let { name, id, selectedChannelId } = user;
+  let { name, id } = user;
 
   socket.__clientId = id || crypto.randomUUID();
   clients.set(id, {
     name,
-    selectedChannelId,
+    selectedChannelId: null,
     socket,
   });
 
