@@ -151,6 +151,7 @@ class Channel {
           data: {
             messages: this.messages,
             users: this.users,
+            ownerId: this.ownerId,
           },
         })
       );
