@@ -394,6 +394,7 @@ function addClient(socket, user) {
   let { name, id } = user;
 
   socket.__clientId = id || crypto.randomUUID();
+  console.log('addClient', socket.__clientId);
   clients.set(id, {
     name,
     selectedChannelId: null,
