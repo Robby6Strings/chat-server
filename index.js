@@ -5,6 +5,7 @@ const { Server } = require('ws');
 
 const {
   onClientChannelAction,
+  onClientUserAction,
   onClientMessage,
   addClient,
   clients,
@@ -29,6 +30,9 @@ wss.on('connection', (ws) => {
       case 'auth':
         addClient(ws, msg.data);
         break;
+      case 'user':
+        onClientUserAction(ws, msg.data);
+        break;
       case 'message':
         onClientMessage(ws, msg.data);
         break;
@@ -47,31 +51,27 @@ wss.on('connection', (ws) => {
 setInterval(() => {
   const activeClientIdList = [];
   wss.clients.forEach((client) => {
-    //if (!client.__clientId) return wss.clients.delete(client);
     activeClientIdList.push(client.__clientId);
 
     client.send(
       JSON.stringify({
         type: 'ping',
-        data: new Date().toTimeString(),
       })
     );
   });
-
-  console.log('activeClientIdList', activeClientIdList);
-
+  // compile removal list
   const deleteList = [];
   clients.forEach((_, clientId) => {
     if (activeClientIdList.indexOf(clientId) > -1) return;
 
     deleteList.push(clientId);
   });
-
+  // remove and broadcast removals
   deleteList.forEach((id) => {
     channels.forEach((chnl) => {
       chnl.removeUser(id);
-      chnl.broadcastState();
+      if (chnl.users.length) chnl.broadcastState();
     });
     clients.delete(id);
   });
-}, 3000);
+}, 250);

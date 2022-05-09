@@ -348,6 +348,16 @@ function onClientChannelAction(ws, msg) {
       break;
   }
 }
+
+function onClientUserAction(ws, msg) {
+  switch (msg.action) {
+    case 'update':
+      updateUser(ws, msg.data);
+    default:
+      break;
+  }
+}
+
 function onClientMessage(socket, msg) {
   const { content } = msg;
   const userRecord = clients.get(socket.__clientId);
@@ -360,11 +370,30 @@ function onClientMessage(socket, msg) {
     clearUserChannel(socket);
   }
 }
+
+function updateUser(socket, name) {
+  const userRecord = clients.get(socket.__clientId);
+  userRecord.name = name;
+  clients.set(socket.__clientId, userRecord);
+
+  const chnl = channels.get(userRecord.selectedChannelId);
+  chnl.users.find((usr) => usr.id == socket.__clientId).name = name;
+  channels.set(chnl.id, chnl);
+  chnl.broadcastState();
+
+  socket.send(
+    JSON.stringify({
+      type: 'user',
+      action: 'update',
+      data: name,
+    })
+  );
+}
+
 function addClient(socket, user) {
   let { name, id, selectedChannelId } = user;
-  if (!id) id = crypto.randomUUID();
 
-  socket.__clientId = id;
+  socket.__clientId = id || crypto.randomUUID();
   clients.set(id, {
     name,
     selectedChannelId,
@@ -388,6 +417,7 @@ const channels = new Map();
 
 module.exports = {
   onClientChannelAction,
+  onClientUserAction,
   onClientMessage,
   addClient,
   clients,
