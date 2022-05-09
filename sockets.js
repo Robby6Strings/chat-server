@@ -431,7 +431,7 @@ function updateUser(socket, name) {
 }
 
 function addClient(socket, user) {
-  let { name, id } = user;
+  let { name, id, selectedChannelId } = user;
 
   socket.__clientId = id || crypto.randomUUID();
   clients.set(socket.__clientId, {
@@ -441,6 +441,7 @@ function addClient(socket, user) {
   });
 
   sendAuthMessage(socket, socket.__clientId);
+  joinChannel(socket, selectedChannelId);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
