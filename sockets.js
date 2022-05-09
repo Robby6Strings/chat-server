@@ -401,7 +401,6 @@ function addClient(socket, user) {
   });
 
   sendAuthMessage(socket, id);
-  joinChannel(socket, selectedChannelId);
 }
 function sendAuthMessage(socket, userId) {
   socket.send(
