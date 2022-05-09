@@ -76,6 +76,7 @@ class Channel {
           userRecord.name,
           name
         );
+        console.log('replacing message content', msg.message.content);
       });
       changeApplied = true;
     }
