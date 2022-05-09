@@ -246,13 +246,13 @@ function joinChannel(socket, channelId, password) {
   if (!channel) {
     return clearUserChannel(socket);
   } else {
-    console.log(
-      'joining channel',
-      channel.password,
-      password,
-      channel.ownerId,
-      socket.__clientId
-    );
+    // console.log(
+    //   'joining channel',
+    //   channel.password,
+    //   password,
+    //   channel.ownerId,
+    //   socket.__clientId
+    // );
     if (channel.password && channel.ownerId != socket.__clientId) {
       if (!password) {
         console.log(
@@ -432,7 +432,7 @@ function updateUser(socket, name) {
 
 function addClient(socket, user) {
   let { name, id, selectedChannelId } = user;
-
+  console.log('addClient', name, id, selectedChannelId);
   socket.__clientId = id || crypto.randomUUID();
   clients.set(socket.__clientId, {
     name,
