@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 
+const { encodeName } = require('./formatting');
+
 class Message {
   constructor(user, content, targetUser) {
     this.id = crypto.randomUUID();
@@ -44,7 +46,7 @@ class Channel {
     this.sendWelcomeMessage(userId, userRecord.name);
   }
 
-  onUserNameUpdate(id, name) {
+  onUserNameUpdate(id, name, oldName) {
     let changeApplied = false;
     // user meta
     const userMatch = this.users.find((user) => user.id == id);
@@ -69,14 +71,11 @@ class Channel {
       return msg.user.id == 1 && msg.targetUser == id;
     });
     if (userServerMessages.length) {
-      const userRecord = clients.get(id);
       userServerMessages.forEach((msg) => {
-        console.log('replacing message content', msg.message.content);
         msg.message.content = msg.message.content.replaceAll(
-          userRecord.name,
-          name
+          encodeName(oldName),
+          encodeName(name)
         );
-        console.log('replacing message content', msg.message.content);
       });
       changeApplied = true;
     }
@@ -97,7 +96,7 @@ class Channel {
       this.broadcast(
         new Message(
           { id: 1, name: 'Server' },
-          `${userName} has joined the channel 😁`,
+          `${encodeName(userName)} has joined the channel 😁`,
           userId
         )
       );
@@ -105,12 +104,9 @@ class Channel {
   }
 
   removeUser(userId) {
-    console.log('removing user from group ' + this.id, userId, this.users);
     const channelUser = this.users.find((user) => user.id == userId);
-    if (!channelUser) {
-      console.log("couldn't find user index");
-      return;
-    }
+    if (!channelUser) return;
+
     this.users.splice(this.users.indexOf(channelUser), 1);
     channels.set(this.id, this);
     if (!this.users.length) {
