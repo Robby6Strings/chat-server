@@ -66,7 +66,7 @@ class Channel {
 
     //user-referenced servcer messages
     const userServerMessages = this.messages.filter((msg) => {
-      return msg.user.id == 1 && msg.targetUser.id == id;
+      return msg.user.id == 1 && msg.targetUser == id;
     });
     if (userServerMessages.length) {
       const userRecord = clients.get(id);
